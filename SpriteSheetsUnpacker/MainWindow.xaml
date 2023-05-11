@@ -1,0 +1,22 @@
+﻿<Window x:Class="SpriteSheetsUnpacker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SpriteSheetsUnpacker"
+        mc:Ignorable="d"
+        Title="Sprite Sheets Unpacker" Height="350" Width="525" Icon="/icon.ico">
+    <Grid Drop="OnDrop" AllowDrop="True">
+        <Grid.Background>
+            <ImageBrush ImageSource="/img.gif"/>
+        </Grid.Background>
+        <Grid Height="30" VerticalAlignment="Bottom">
+            <ProgressBar x:Name="ProgessView" Value="0.5" Maximum="1" SmallChange="0.0001"></ProgressBar>
+            <Label x:Name="Status" Content="Status"></Label>
+            <Label x:Name="Progess" Content="100/100" HorizontalAlignment="Right"></Label>
+        </Grid>
+        <Grid x:Name="GridView" Background="White" Margin="0,0,0,30">
+            <Image x:Name="ImageView" Stretch="None"></Image>
+        </Grid>
+    </Grid>
+</Window>
