@@ -66,7 +66,13 @@ namespace SpriteSheetsUnpacker
                                 if (!Try4(path))
                                     if (!Try5(path))
                                     {
-                                        Try6(path);
+                                        if (Try6(path))
+                                        {
+                                            if (Try7(path))
+                                            {
+
+                                            }
+                                        }
                                     }
                 }
             }
@@ -233,8 +239,9 @@ namespace SpriteSheetsUnpacker
                         };
                         _files.Add(img);
                     }
+                    return true;
                 }
-                return true;
+                return false;
             }
             catch (Exception)
             {
@@ -287,8 +294,9 @@ namespace SpriteSheetsUnpacker
                         };
                         _files.Add(img);
                     }
+                    return true;
                 }
-                return true;
+                return false;
             }
             catch (Exception)
             {
@@ -445,21 +453,63 @@ namespace SpriteSheetsUnpacker
                 return false;
             }
         }
+        private bool Try7(string path)
+        {
+            try
+            {
+                xmlPath = path.Replace(".png", ".atlas");
+                if (File.Exists(xmlPath))
+                {
+                    fileName = Path.GetFileName(path);
+                    folderName = Path.GetDirectoryName(path) + "/" + fileName.Replace(".png", "");
 
+                    if (!Directory.Exists(folderName))
+                        Directory.CreateDirectory(folderName);
+
+                    string data = File.ReadAllText(xmlPath);
+                    string[] array = data.Split('\n');
+                    string patten = "([0-9]+)";
+                    Regex regex = new Regex(patten);
+                    MatchCollection match;
+                    for (int i = 6; i < array.Length - 1; i += 7)
+                    {
+
+                        ImageFileInfor img = new ImageFileInfor();
+                        img.Name = array[i];
+                        img.Rotate = array[i + 1].Contains("false") ? false : true;
+                        img.SourcePath = path;
+                        img.FolderPath = folderName;
+                        img.ResultPath = folderName + "/" + img.Name;
+                        img.RootName = fileName;
+
+                        match = regex.Matches(array[i + 2]);
+                        img.X = Convert.ToInt32(match[0].Value);
+                        img.Y = Convert.ToInt32(match[1].Value);
+
+                        match = regex.Matches(array[i + 3]);
+                        img.Width = Convert.ToInt32(match[0].Value);
+                        img.Height = Convert.ToInt32(match[1].Value);
+
+                        _files.Add(img);
+                    }
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 
-}
-[Serializable]
-public class P53
-{
-    public P5 P5;
 }
 
 
 [Serializable]
 public class P5
 {
-    public P52[] frames;
+    public P52[] frames = new P52[1];
     //public meta meta = new meta();
 }
 
@@ -487,16 +537,4 @@ public class sourceSize
 
     public int w;
     public int h;
-}
-
-[Serializable]
-public class meta
-{
-    public string app;
-    public string version;
-    public string image;
-    public string format;
-    public string size;
-    public string scale;
-    public string smartupdate;
 }
