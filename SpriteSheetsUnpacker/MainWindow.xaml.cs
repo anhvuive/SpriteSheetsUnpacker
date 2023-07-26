@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -65,15 +65,12 @@ namespace SpriteSheetsUnpacker
                             if (!Try3(path))
                                 if (!Try4(path))
                                     if (!Try5(path))
-                                    {
-                                        if (Try6(path))
-                                        {
-                                            if (Try7(path))
+                                        if (!Try6(path))
+                                            if (!Try7(path))
+                                                if (!Try8(path))
                                             {
 
                                             }
-                                        }
-                                    }
                 }
             }
 
@@ -126,6 +123,7 @@ namespace SpriteSheetsUnpacker
                 {
                     Directory.CreateDirectory(folderName);
                 }
+                imageFileInfor.ResultPath = imageFileInfor.ResultPath.Replace("\r", "");
                 crop.Save(imageFileInfor.ResultPath);
                 crop.Dispose();
                 var name = imageFileInfor.Name;
@@ -430,6 +428,7 @@ namespace SpriteSheetsUnpacker
                     for (int i = 0; i < leng; i++)
                     {
                         var nodes = subDicts[i].ChildNodes;
+                        if (nodes.Count < 13) return false;
                         ImageFileInfor img = new ImageFileInfor()
                         {
                             X = Convert.ToInt32(nodes[13].InnerText),
@@ -454,6 +453,59 @@ namespace SpriteSheetsUnpacker
             }
         }
         private bool Try7(string path)
+        {
+            try
+            {
+                xmlPath = path.Replace(".png", ".plist");
+                if (File.Exists(xmlPath))
+                {
+                    fileName = Path.GetFileName(path);
+                    folderName = Path.GetDirectoryName(path) + "/" + fileName.Replace(".png", "");
+
+                    if (!Directory.Exists(folderName))
+                        Directory.CreateDirectory(folderName);
+
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.Load(new StreamReader(xmlPath));
+
+                    var dict = xmlDocument.DocumentElement.SelectSingleNode("dict").SelectNodes("dict")[0];
+                    var subDicts = dict.SelectNodes("dict");
+                    var keys = dict.SelectNodes("key");
+                    var leng = keys.Count;
+                    string patten = "([0-9]+)";
+                    Regex regex = new Regex(patten);
+                    MatchCollection match;
+                    for (int i = 0; i < leng; i++)
+                    {
+                        var nodes = subDicts[i].ChildNodes;
+                        var match1 = regex.Matches(nodes[9].InnerText);
+                        //var match2 = regex.Matches(nodes[5].InnerText);
+
+                        ImageFileInfor img = new ImageFileInfor()
+                        {
+
+                        };
+                        img.X = Convert.ToInt32(match1[0].Value);
+                        img.Y = Convert.ToInt32(match1[1].Value);
+                        img.Width = Convert.ToInt32(match1[2].Value);
+                        img.Height = Convert.ToInt32(match1[3].Value);
+                        img.Name = keys[i].InnerText;
+                        img.SourcePath = path;
+                        img.FolderPath = folderName;
+                        img.ResultPath = folderName + "/" + keys[i].InnerText.Replace("/", "");
+                        img.RootName = fileName;
+                        _files.Add(img);
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private bool Try8(string path)
         {
             try
             {
@@ -504,12 +556,17 @@ namespace SpriteSheetsUnpacker
     }
 
 }
+[Serializable]
+public class P53
+{
+    public P5 P5;
+}
 
 
 [Serializable]
 public class P5
 {
-    public P52[] frames = new P52[1];
+    public P52[] frames;
     //public meta meta = new meta();
 }
 
@@ -537,4 +594,16 @@ public class sourceSize
 
     public int w;
     public int h;
+}
+
+[Serializable]
+public class meta
+{
+    public string app;
+    public string version;
+    public string image;
+    public string format;
+    public string size;
+    public string scale;
+    public string smartupdate;
 }
